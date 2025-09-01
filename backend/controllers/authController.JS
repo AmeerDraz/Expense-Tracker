@@ -1,23 +1,20 @@
-const User = require('../models/User.js');
+const User = require("../models/User.js");
 
-const jwt = require('jsonwebtoken');
-
-
+const jwt = require("jsonwebtoken");
 
 // Generate JWT Token
 const generateToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, {
-        expiresIn: '1h',
+        expiresIn: "1h",
     });
-}
+};
 
 // Register User
 exports.registerUser = async (req, res) => {
-
     const { fullName, email, password, profileImageUrl } = req.body;
-    
+
     // validation: check for missing fields
-    if( !fullName || !email || !password ) {
+    if (!fullName || !email || !password) {
         return res.status(400).json({ message: "All fields are required" });
     }
 
@@ -42,24 +39,26 @@ exports.registerUser = async (req, res) => {
             token: generateToken(user._id),
         });
     } catch (error) {
-        res
-            .status(500)
-            .json({ message: "Error registering", error: error.message });
+        res.status(500).json({
+            message: "Error registering",
+            error: error.message,
+        });
     }
-
 };
 
 // Login User
 exports.loginUser = async (req, res) => {
     const { email, password } = req.body;
 
-    if(!email || !password) {
+    if (!email || !password) {
         return res.status(400).json({ message: "All fields are required" });
     }
     try {
         const user = await User.findOne({ email });
-        if(!user || !(await user.comparePassword(password))) {
-            return res.status(400).json({ message: "Invalid email or password" });
+        if (!user || !(await user.comparePassword(password))) {
+            return res
+                .status(400)
+                .json({ message: "Invalid email or password" });
         }
 
         res.status(200).json({
@@ -67,13 +66,13 @@ exports.loginUser = async (req, res) => {
             user,
             token: generateToken(user._id),
         });
-
     } catch (error) {
-        res.status(500).json({ message: "Error logging in", error: error.message });
+        res.status(500).json({
+            message: "Error logging in",
+            error: error.message,
+        });
     }
-
 };
-
 
 // Get User Info
 exports.getUserInfo = async (req, res) => {
@@ -83,8 +82,10 @@ exports.getUserInfo = async (req, res) => {
             return res.status(404).json({ message: "User not found" });
         }
         res.status(200).json(user);
-    } catch (error) { 
-        res.status(500).json({ message: "Error fetching user info", error: error.message });
+    } catch (error) {
+        res.status(500).json({
+            message: "Error fetching user info",
+            error: error.message,
+        });
     }
 };
-
