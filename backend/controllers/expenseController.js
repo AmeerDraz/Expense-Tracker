@@ -58,7 +58,7 @@ exports.downloadExpenseExcel = async (req, res) => {
 
         // prepare data for excel
         const data = expense.map((expense) => ({
-            Source: expense.source,
+            Category: expense.category,
             Amount: expense.amount,
             Date: expense.date,
         }));
