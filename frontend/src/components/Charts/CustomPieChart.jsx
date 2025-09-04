@@ -8,7 +8,7 @@ import {
     Legend,
 } from "recharts";
 import customTooltip from "./customTooltip";
-import CustomLegnd from "./CustomLegnd";
+import CustomLegend from "./CustomLegend";
 
 const CustomPieChart = ({
     data,
@@ -38,7 +38,7 @@ const CustomPieChart = ({
                     ))}
                 </Pie>
                 <Tooltip content={customTooltip} />
-                <Legend content={CustomLegnd} />
+                <Legend content={CustomLegend} />
                 {showTextAnchor && (
                     <>
                         <text
