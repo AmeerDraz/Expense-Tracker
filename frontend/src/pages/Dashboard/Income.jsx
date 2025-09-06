@@ -11,6 +11,7 @@ import { useContext } from "react";
 import { UserContext } from "../../context/userContext";
 import { toast } from "react-toastify";
 import IncomeList from "../../components/Income/IncomeList";
+import DeleteAlert from './../../components/DeleteAlert';
 
 const Income = () => {
     useUserAuth(); // Only for side effects
@@ -90,8 +91,22 @@ const Income = () => {
         }
     };
 
+
     // Delete Income
-    const deleteIncome = async () => {};
+    const deleteIncome = async (id) => {
+        try {
+            await axiosInstance.delete(API_PATHS.INCOME.DELETE_INCOME(id));
+
+            setOpenDeleteAlert({ show: false, data: null });
+            toast.success("Income details deleted successfully");
+            fetchIncomeDetails();
+        } catch (error) {
+            console.error(
+                "Error deleting income:",
+                error.response?.data?.message || error.message
+            );
+        }
+    };
 
     // Handle Download Income Details
     const handleDownloadIncomeDetails = async () => {};
@@ -133,8 +148,8 @@ const Income = () => {
 
                         <IncomeList
                             transactions={incomeData}
-                            onDelete={(id) => {
-                                setOpenDeleteAlert({ show: true, data: id });
+                            onDelete={(item) => {
+                                setOpenDeleteAlert({ show: true, data: item });
                             }}
                             onDownload={handleDownloadIncomeDetails}
                         />
@@ -150,7 +165,7 @@ const Income = () => {
                 </Modal>
 
                 <Modal
-                    osOpen={openDeleteAlert.show}
+                    isOpen={openDeleteAlert.show}
                     onClose={() =>
                         setOpenDeleteAlert({ show: false, data: null })
                     }
