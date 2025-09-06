@@ -9,8 +9,8 @@ import AddIncomeForm from "../../components/Income/AddIncomeForm";
 import { useUserAuth } from "../../hooks/useUserAuth";
 import { useContext } from "react";
 import { UserContext } from "../../context/userContext";
-import {toast} from "react-toastify"
-
+import { toast } from "react-toastify";
+import IncomeList from "../../components/Income/IncomeList";
 
 const Income = () => {
     useUserAuth(); // Only for side effects
@@ -130,6 +130,14 @@ const Income = () => {
                                 }
                             />
                         </div>
+
+                        <IncomeList
+                            transactions={incomeData}
+                            onDelete={(id) => {
+                                setOpenDeleteAlert({ show: true, data: id });
+                            }}
+                            onDownload={handleDownloadIncomeDetails}
+                        />
                     </div>
                 )}
 
@@ -139,6 +147,19 @@ const Income = () => {
                     title="Add Income"
                 >
                     <AddIncomeForm onAddIncome={handleAddIncome} />
+                </Modal>
+
+                <Modal
+                    osOpen={openDeleteAlert.show}
+                    onClose={() =>
+                        setOpenDeleteAlert({ show: false, data: null })
+                    }
+                    title="Delete Income"
+                >
+                    <DeleteAlert
+                        content="Are you sure you want to delete this income detail?"
+                        onDelete={() => deleteIncome(openDeleteAlert.data)}
+                    />
                 </Modal>
             </div>
         </DashboardLayout>

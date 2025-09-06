@@ -136,6 +136,7 @@
 
 import React, { useEffect, useState } from "react";
 import DashboardLayout from "../../components/layouts/DashboardLayout";
+import Loader from "../../components/Loader";
 
 import { LuHandCoins, LuWalletMinimal } from "react-icons/lu";
 import { IoMdCard } from "react-icons/io";
@@ -189,6 +190,11 @@ const Home = () => {
 
     return (
         <DashboardLayout activeMenu="Dashboard">
+            {loading && (
+                <div className="fixed inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center">
+                    <Loader className="w-full" />
+                </div>
+            )}
             <div className="my-5 mx-auto">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <InfoCard
