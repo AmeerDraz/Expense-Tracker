@@ -1,19 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { prepareIncomeBarChartData } from "../../utils/helper";
 import { LuPlus } from "react-icons/lu";
-import CustomBarChart from '../Charts/CustomBarChart';
-
+import CustomBarChart from "../Charts/CustomBarChart";
 
 const IncomeOverview = ({ transactions, onAddIncome }) => {
-
-    const [chartData, setChartData] = useState([])
+    const [chartData, setChartData] = useState([]);
 
     useEffect(() => {
+        console.log("Raw transactions:", transactions);
         const result = prepareIncomeBarChartData(transactions);
-        setChartData(result)
+        console.log("Processed chart data:", result);
+        setChartData(result);
 
-        return () =>{}
-    }, [transactions]); 
+        return () => {};
+    }, [transactions]);
 
     return (
         <div className="card">
@@ -30,8 +30,8 @@ const IncomeOverview = ({ transactions, onAddIncome }) => {
                     Add Income
                 </button>
             </div>
-            <div className="mt-10 bg-red-900">
-                <CustomBarChart data={chartData} />
+            <div className="mt-10">
+                <CustomBarChart data={chartData} xAxisKey="month" />
             </div>
         </div>
     );

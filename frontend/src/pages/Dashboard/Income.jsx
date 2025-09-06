@@ -5,10 +5,20 @@ import axiosInstance from "./../../utils/axiosInstance";
 import { API_PATHS } from "../../utils/apiPaths";
 import Modal from "../../components/Modal";
 import Loader from "../../components/Loader";
+import AddIncomeForm from "../../components/Income/AddIncomeForm";
+import { useUserAuth } from "../../hooks/useUserAuth";
+import { useContext } from "react";
+import { UserContext } from "../../context/userContext";
+import {toast} from "react-toastify"
+
 
 const Income = () => {
+    useUserAuth(); // Only for side effects
+    const { user } = useContext(UserContext);
+    const isAuthenticated = !!user;
     const [incomeData, setIncomeData] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
     const [openDeleteAlert, setOpenDeleteAlert] = useState({
         show: false,
         data: null,
@@ -18,9 +28,10 @@ const Income = () => {
 
     // Get All Income Details
     const fetchIncomeDetails = async () => {
-        if (loading) return;
+        if (loading || !isAuthenticated || !user) return;
 
         setLoading(true);
+        setError(null);
 
         try {
             const response = await axiosInstance.get(
@@ -31,14 +42,53 @@ const Income = () => {
                 setIncomeData(response.data);
             }
         } catch (error) {
-            console.log("Something went wrong. please try again", error);
+            const errorMessage =
+                error.response?.data?.message || "Failed to fetch income data";
+            console.error("Error fetching income data:", error);
+            setError(errorMessage);
+            setIncomeData([]);
         } finally {
             setLoading(false);
         }
     };
 
     // Handle Add Income
-    const handleAddIncome = async () => {};
+    const handleAddIncome = async (income) => {
+        const { source, amount, date, icon } = income;
+
+        // Validation Checks
+        if (!source.trim()) {
+            toast.error("Source is required.");
+            return;
+        }
+
+        if (!amount || isNaN(amount) || Number(amount) <= 0) {
+            toast.error("Amount should be valid number greater than 0.");
+            return;
+        }
+
+        if (!date) {
+            toast.error("Date is required.");
+            return;
+        }
+
+        try {
+            await axiosInstance.post(API_PATHS.INCOME.ADD_INCOME, {
+                source,
+                amount,
+                date,
+                icon,
+            });
+            setOpenAddIncomeModal(false);
+            toast.success("Income added successfully");
+            fetchIncomeDetails();
+        } catch (error) {
+            console.error(
+                "Error adding income",
+                error.response?.data.message || error.message
+            );
+        }
+    };
 
     // Delete Income
     const deleteIncome = async () => {};
@@ -47,10 +97,10 @@ const Income = () => {
     const handleDownloadIncomeDetails = async () => {};
 
     useEffect(() => {
-        fetchIncomeDetails();
-
-        return () => {};
-    }, []);
+        if (isAuthenticated && user) {
+            fetchIncomeDetails();
+        }
+    }, [isAuthenticated, user]);
 
     return (
         <DashboardLayout activeMenu="Income">
@@ -60,21 +110,35 @@ const Income = () => {
                 </div>
             )}
             <div className="my-5 mx-auto">
-                <div className="grid grid-cols-1 gap-6">
-                    <div className="">
-                        <IncomeOverview
-                            transactions={incomeData}
-                            onAddIncome={() => setOpenAddIncomeModal(true)}
-                        />
+                {error ? (
+                    <div
+                        className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative"
+                        role="alert"
+                    >
+                        <p className="font-medium">Error</p>
+                        <p className="text-sm">{error}</p>
                     </div>
-                </div>
+                ) : (
+                    <div className="grid grid-cols-1 gap-6">
+                        <div className="">
+                            <IncomeOverview
+                                transactions={incomeData}
+                                onAddIncome={() =>
+                                    isAuthenticated
+                                        ? setOpenAddIncomeModal(true)
+                                        : null
+                                }
+                            />
+                        </div>
+                    </div>
+                )}
 
                 <Modal
                     isOpen={openAddIncomeModal}
                     onClose={() => setOpenAddIncomeModal(false)}
                     title="Add Income"
                 >
-                    <div>Add Income Form</div>
+                    <AddIncomeForm onAddIncome={handleAddIncome} />
                 </Modal>
             </div>
         </DashboardLayout>
