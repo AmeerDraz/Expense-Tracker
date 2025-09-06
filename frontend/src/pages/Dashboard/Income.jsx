@@ -1,38 +1,36 @@
 import React, { useEffect, useState } from "react";
 import DashboardLayout from "../../components/layouts/DashboardLayout";
-import IncomeOverview from "../../components/Income/IncomeOverview";
-import axiosInstance from "./../../utils/axiosInstance";
-import { API_PATHS } from "../../utils/apiPaths";
-import Modal from "../../components/Modal";
-import Loader from "../../components/Loader";
-import AddIncomeForm from "../../components/Income/AddIncomeForm";
+
+import { useNavigate } from "react-router-dom";
 import { useUserAuth } from "../../hooks/useUserAuth";
-import { useContext } from "react";
-import { UserContext } from "../../context/userContext";
-import { toast } from "react-toastify";
+import axiosInstance from "../../utils/axiosInstance";
+import { API_PATHS } from "../../utils/apiPaths";
+import IncomeOverview from "../../components/Income/IncomeOverview";
 import IncomeList from "../../components/Income/IncomeList";
-import DeleteAlert from './../../components/DeleteAlert';
+import AddIncomeModal from "../../components/Income/AddIncomeForm";
+import Loader from "../../components/Loader";
+import Modal from "../../components/Modal";
+import AddIncomeForm from "../../components/Income/AddIncomeForm";
+import toast from "react-hot-toast";
+import DeleteAlert from "../../components/DeleteAlert";
 
 const Income = () => {
-    useUserAuth(); // Only for side effects
-    const { user } = useContext(UserContext);
-    const isAuthenticated = !!user;
+    useUserAuth();
+
     const [incomeData, setIncomeData] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
+
+    const [openAddIncomeModal, setOpenAddIncomeModal] = useState(false);
     const [openDeleteAlert, setOpenDeleteAlert] = useState({
         show: false,
         data: null,
     });
 
-    const [openAddIncomeModal, setOpenAddIncomeModal] = useState(false);
-
     // Get All Income Details
     const fetchIncomeDetails = async () => {
-        if (loading || !isAuthenticated || !user) return;
+        if (loading) return;
 
         setLoading(true);
-        setError(null);
 
         try {
             const response = await axiosInstance.get(
@@ -43,11 +41,7 @@ const Income = () => {
                 setIncomeData(response.data);
             }
         } catch (error) {
-            const errorMessage =
-                error.response?.data?.message || "Failed to fetch income data";
-            console.error("Error fetching income data:", error);
-            setError(errorMessage);
-            setIncomeData([]);
+            console.log("Something went wrong. Please try again.", error);
         } finally {
             setLoading(false);
         }
@@ -64,7 +58,7 @@ const Income = () => {
         }
 
         if (!amount || isNaN(amount) || Number(amount) <= 0) {
-            toast.error("Amount should be valid number greater than 0.");
+            toast.error("Amount should be a valid number greater than 0.");
             return;
         }
 
@@ -80,17 +74,17 @@ const Income = () => {
                 date,
                 icon,
             });
+
             setOpenAddIncomeModal(false);
             toast.success("Income added successfully");
             fetchIncomeDetails();
         } catch (error) {
             console.error(
-                "Error adding income",
-                error.response?.data.message || error.message
+                "Error adding income:",
+                error.response?.data?.message || error.message
             );
         }
     };
-
 
     // Delete Income
     const deleteIncome = async (id) => {
@@ -108,14 +102,35 @@ const Income = () => {
         }
     };
 
-    // Handle Download Income Details
-    const handleDownloadIncomeDetails = async () => {};
+    // handle download income details
+    const handleDownloadIncomeDetails = async () => {
+        try {
+            const response = await axiosInstance.get(
+                API_PATHS.INCOME.DOWNLOAD_INCOME,
+                {
+                    responseType: "blob",
+                }
+            );
+
+            // Create a URL for the blob
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement("a");
+            link.href = url;
+            link.setAttribute("download", "income_details.xlsx");
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error("Error downloading income details:", error);
+            toast.error("Failed to download income details. Please try again.");
+        }
+    };
 
     useEffect(() => {
-        if (isAuthenticated && user) {
-            fetchIncomeDetails();
-        }
-    }, [isAuthenticated, user]);
+        fetchIncomeDetails();
+        return () => {};
+    }, []);
 
     return (
         <DashboardLayout activeMenu="Income">
@@ -125,57 +140,43 @@ const Income = () => {
                 </div>
             )}
             <div className="my-5 mx-auto">
-                {error ? (
-                    <div
-                        className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative"
-                        role="alert"
-                    >
-                        <p className="font-medium">Error</p>
-                        <p className="text-sm">{error}</p>
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 gap-6">
-                        <div className="">
-                            <IncomeOverview
-                                transactions={incomeData}
-                                onAddIncome={() =>
-                                    isAuthenticated
-                                        ? setOpenAddIncomeModal(true)
-                                        : null
-                                }
-                            />
-                        </div>
-
-                        <IncomeList
+                <div className="grid grid-cols-1 gap-6">
+                    <div className="">
+                        <IncomeOverview
                             transactions={incomeData}
-                            onDelete={(item) => {
-                                setOpenDeleteAlert({ show: true, data: item });
-                            }}
-                            onDownload={handleDownloadIncomeDetails}
+                            onAddIncome={() => setOpenAddIncomeModal(true)}
                         />
                     </div>
-                )}
 
-                <Modal
-                    isOpen={openAddIncomeModal}
-                    onClose={() => setOpenAddIncomeModal(false)}
-                    title="Add Income"
-                >
-                    <AddIncomeForm onAddIncome={handleAddIncome} />
-                </Modal>
-
-                <Modal
-                    isOpen={openDeleteAlert.show}
-                    onClose={() =>
-                        setOpenDeleteAlert({ show: false, data: null })
-                    }
-                    title="Delete Income"
-                >
-                    <DeleteAlert
-                        content="Are you sure you want to delete this income detail?"
-                        onDelete={() => deleteIncome(openDeleteAlert.data)}
+                    <IncomeList
+                        transactions={incomeData}
+                        onDelete={(id) => {
+                            setOpenDeleteAlert({ show: true, data: id });
+                        }}
+                        onDownload={handleDownloadIncomeDetails}
                     />
-                </Modal>
+
+                    <Modal
+                        isOpen={openAddIncomeModal}
+                        onClose={() => setOpenAddIncomeModal(false)}
+                        title="Add Income"
+                    >
+                        <AddIncomeForm onAddIncome={handleAddIncome} />
+                    </Modal>
+
+                    <Modal
+                        isOpen={openDeleteAlert.show}
+                        onClose={() =>
+                            setOpenDeleteAlert({ show: false, data: null })
+                        }
+                        title="Delete Income"
+                    >
+                        <DeleteAlert
+                            content="Are you sure you want to delete this income detail?"
+                            onDelete={() => deleteIncome(openDeleteAlert.data)}
+                        />
+                    </Modal>
+                </div>
             </div>
         </DashboardLayout>
     );
