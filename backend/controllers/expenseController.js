@@ -1,7 +1,7 @@
 const xlsx = require("xlsx");
 const Expense = require("../models/Expense");
 
-// Add Expense 
+// Add Expense
 exports.addExpense = async (req, res) => {
     const userId = req.user.id;
     try {
@@ -51,6 +51,29 @@ exports.deleteExpense = async (req, res) => {
 };
 
 // dowmload Excel
+// exports.downloadExpenseExcel = async (req, res) => {
+//     const userId = req.user.id;
+//     try {
+//         const expense = await Expense.find({ userId }).sort({ date: -1 });
+
+//         // prepare data for excel
+//         const data = expense.map((expense) => ({
+//             Category: expense.category,
+//             Amount: expense.amount,
+//             Date: expense.date,
+//         }));
+
+//         const wb = xlsx.utils.book_new();
+//         const ws = xlsx.utils.json_to_sheet(data);
+//         xlsx.utils.book_append_sheet(wb, ws, "Expense");
+//         xlsx.writeFile(wb, "Expense_details.xlsx");
+//         res.download("Expense_details.xlsx");
+//     } catch (error) {
+//         res.status(500).json({ message: "Server Error" });
+//     }
+// };
+
+// download Excel
 exports.downloadExpenseExcel = async (req, res) => {
     const userId = req.user.id;
     try {
@@ -66,9 +89,22 @@ exports.downloadExpenseExcel = async (req, res) => {
         const wb = xlsx.utils.book_new();
         const ws = xlsx.utils.json_to_sheet(data);
         xlsx.utils.book_append_sheet(wb, ws, "Expense");
-        xlsx.writeFile(wb, "Expense_details.xlsx");
-        res.download("Expense_details.xlsx");
+
+        // اكتب الملف في الذاكرة (buffer)
+        const buffer = xlsx.write(wb, { type: "buffer", bookType: "xlsx" });
+
+        // رجع الملف مباشرة للمستخدم كاستجابة
+        res.setHeader(
+            "Content-Disposition",
+            "attachment; filename=Expense_details.xlsx"
+        );
+        res.setHeader(
+            "Content-Type",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        );
+
+        res.send(buffer);
     } catch (error) {
-        res.status(500).json({ message: "Server Error" });
+        res.status(500).json({ message: "Server Error", error: error.message });
     }
 };

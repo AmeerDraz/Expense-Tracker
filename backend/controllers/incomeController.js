@@ -50,7 +50,33 @@ exports.deleteIncome = async (req, res) => {
     }
 };
 
-// dowmload Excel
+// // dowmload Excel
+// exports.downloadIncomeExcel = async (req, res) => {
+//     const userId = req.user.id;
+//     try {
+//         const incomes = await Income.find({ userId }).sort({ date: -1 });
+
+//         // prepare data for excel
+//         const data = incomes.map((income) => ({
+//             Source: income.source,
+//             Amount: income.amount,
+//             Date: income.date,
+//         }));
+
+//         const wb = xlsx.utils.book_new();
+//         const ws = xlsx.utils.json_to_sheet(data);
+//         xlsx.utils.book_append_sheet(wb, ws, "Income");
+
+//         xlsx.writeFile(wb, "Income_details.xlsx");
+//         res.download("Income_details.xlsx");
+//     } catch (error) {
+//         res.status(500).json({ message: "Server Error" });
+//     }
+// };
+
+
+
+// download Excel
 exports.downloadIncomeExcel = async (req, res) => {
     const userId = req.user.id;
     try {
@@ -65,10 +91,25 @@ exports.downloadIncomeExcel = async (req, res) => {
 
         const wb = xlsx.utils.book_new();
         const ws = xlsx.utils.json_to_sheet(data);
+
         xlsx.utils.book_append_sheet(wb, ws, "Income");
-        xlsx.writeFile(wb, "Income_details.xlsx");
-        res.download("Income_details.xlsx");
+
+        // كتابة الملف في الذاكرة (buffer) بدل المشروع
+        const buffer = xlsx.write(wb, { type: "buffer", bookType: "xlsx" });
+
+        // إعداد الهيدر للتحميل المباشر
+        res.setHeader(
+            "Content-Disposition",
+            "attachment; filename=Income_details.xlsx"
+        );
+        res.setHeader(
+            "Content-Type",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        );
+
+        // إرسال الملف مباشرة للمتصفح
+        res.send(buffer);
     } catch (error) {
-        res.status(500).json({ message: "Server Error" });
+        res.status(500).json({ message: "Server Error", error: error.message });
     }
 };
