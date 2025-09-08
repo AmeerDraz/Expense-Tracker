@@ -4,7 +4,7 @@ const Modal = ({ children, isOpen, onClose, title }) => {
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex justify-center items-center w-full h-full overflow-y-auto overflow-x-hidden bg-black/30 bg-opacity-50 p-2 sm:p-4">
+        <div className="fixed inset-0 z-[9999] flex justify-center items-center w-full h-full overflow-y-auto overflow-x-hidden bg-black/30 bg-opacity-50 p-2 sm:p-4">
             <div className="relative w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl max-h-[80vh] overflow-y-auto">
                 {/* Modal content */}
                 <div className="relative bg-white rounded-lg shadow-lg dark:bg-gray-700">

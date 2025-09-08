@@ -4,7 +4,7 @@ import { useState } from "react";
 import { HiOutlineMenu, HiOutlineX } from "react-icons/hi";
 import SideMenu from "./SideMenu";
 
-const Navbar = ({ activeMenu }) => {
+const Navbar = ({ activeMenu, onProfileEdit }) => {
     const [openSideMenu, setOpenSideMenu] = useState(false);
     const navigate = useNavigate();
     return (
@@ -27,9 +27,21 @@ const Navbar = ({ activeMenu }) => {
             </h2>
 
             {openSideMenu && (
-                <div className="fixed top-[61px] -ml-4 bg-white">
-                    <SideMenu activeMenu={activeMenu} />
-                </div>
+                <>
+                    {/* Overlay للموبايل */}
+                    <div
+                        className="fixed inset-0 bg-black/20 z-30 min-[1080px]:hidden"
+                        onClick={() => setOpenSideMenu(false)}
+                    />
+                    {/* السايد منيو */}
+                    <div className="fixed top-[61px] left-0 bg-white z-40 shadow-lg">
+                        <SideMenu
+                            activeMenu={activeMenu}
+                            onCloseMobile={() => setOpenSideMenu(false)}
+                            onProfileEdit={onProfileEdit}
+                        />
+                    </div>
+                </>
             )}
         </div>
     );

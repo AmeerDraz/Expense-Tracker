@@ -425,7 +425,7 @@
 
 // export default ProfileEditModal;
 
-import React, { useState, useContext, useRef } from "react";
+import React, { useState, useContext, useRef, useEffect } from "react";
 import Modal from "./Modal";
 import Input from "./Inputs/Input";
 import { UserContext } from "../context/userContext";
@@ -452,6 +452,21 @@ const ProfileEditModal = ({ isOpen, onClose }) => {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [errors, setErrors] = useState({});
+
+    // تحديث البيانات عند فتح المودال أو تغيير بيانات المستخدم
+    useEffect(() => {
+        if (isOpen && user) {
+            setFormData({
+                fullName: user.fullName || "",
+                currentPassword: "",
+                newPassword: "",
+                confirmPassword: "",
+            });
+            setPreviewUrl(user.profileImageUrl || null);
+            setProfileImage(null);
+            setErrors({});
+        }
+    }, [isOpen, user]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -565,12 +580,7 @@ const ProfileEditModal = ({ isOpen, onClose }) => {
     };
 
     return (
-        <Modal
-            className="fixed inset-0 z-[1000] sm:z-auto sm:relative"
-            isOpen={isOpen}
-            onClose={handleClose}
-            title="Edit Profile"
-        >
+        <Modal isOpen={isOpen} onClose={handleClose} title="Edit Profile">
             <form
                 className="space-y-2 text-[10px] sm:text-xs max-h-[85vh] overflow-y-auto p-2"
                 onSubmit={handleSubmit}

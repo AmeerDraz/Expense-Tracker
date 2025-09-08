@@ -81,18 +81,14 @@
 
 // export default SideMenu;
 
-
-import React, { useContext, useState } from "react";
+import React, { useContext } from "react";
 import { SIDE_MENU_DATA } from "../../utils/data";
 import { UserContext } from "../../context/userContext";
 import { useNavigate } from "react-router-dom";
 import ChartAvatar from "../Cards/ChartAvatar";
-import ProfileEditModal from "../ProfileEditModal";
 
-const SideMenu = ({ activeMenu }) => {
+const SideMenu = ({ activeMenu, onCloseMobile, onProfileEdit }) => {
     const { user, clearUser } = useContext(UserContext);
-    const [isProfileEditOpen, setIsProfileEditOpen] = useState(false);
-    const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(true); // لموبايل
     const navigate = useNavigate();
 
     const handleClick = (item) => {
@@ -104,15 +100,23 @@ const SideMenu = ({ activeMenu }) => {
         }
 
         // على الموبايل، أغلق الـ Sidebar عند اختيار عنصر
-        if (window.innerWidth < 640) {
-            setIsMobileSidebarOpen(false);
+        if (onCloseMobile) {
+            onCloseMobile();
         }
 
         navigate(item.path);
     };
 
-    // Sidebar لموبايل
-    if (window.innerWidth < 640 && !isMobileSidebarOpen) return null;
+    const handleProfileClick = () => {
+        // إخفاء السايد منيو في الموبايل عند فتح البروفايل مودال
+        if (onCloseMobile) {
+            onCloseMobile();
+        }
+        // فتح البروفايل مودال
+        if (onProfileEdit) {
+            onProfileEdit();
+        }
+    };
 
     return (
         <>
@@ -120,7 +124,7 @@ const SideMenu = ({ activeMenu }) => {
                 <div className="flex flex-col items-center justify-center gap-3 mt-3 mb-7">
                     <div
                         className="cursor-pointer hover:opacity-80 transition-opacity"
-                        onClick={() => setIsProfileEditOpen(true)}
+                        onClick={handleProfileClick}
                         title="Click to edit profile"
                     >
                         {user?.profileImageUrl ? (
@@ -141,7 +145,7 @@ const SideMenu = ({ activeMenu }) => {
 
                     <h5
                         className="text-gray-950 font-medium leading-6 cursor-pointer hover:text-primary transition-colors"
-                        onClick={() => setIsProfileEditOpen(true)}
+                        onClick={handleProfileClick}
                         title="Click to edit profile"
                     >
                         {user?.fullName || ""}
@@ -163,13 +167,6 @@ const SideMenu = ({ activeMenu }) => {
                     </button>
                 ))}
             </div>
-
-            {isProfileEditOpen && (
-                <ProfileEditModal
-                    isOpen={isProfileEditOpen}
-                    onClose={() => setIsProfileEditOpen(false)}
-                />
-            )}
         </>
     );
 };
