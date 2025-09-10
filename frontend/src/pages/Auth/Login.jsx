@@ -6,17 +6,18 @@ import { validateEmail } from "../../utils/helper";
 import axiosInstance from "../../utils/axiosInstance";
 import { API_PATHS } from "../../utils/apiPaths";
 import { UserContext } from "../../context/userContext";
+import Loader from "../../components/Loader";
+
 const Login = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
 
-
-    const {updateUser} = useContext(UserContext)
-
+    const { updateUser } = useContext(UserContext);
     const navigate = useNavigate();
 
-    // handel login form submit
+    // handle login form submit
     const handleLogin = async (e) => {
         e.preventDefault();
 
@@ -31,8 +32,8 @@ const Login = () => {
         }
 
         setError("");
+        setIsLoading(true);
 
-        // Login api call
         try {
             const response = await axiosInstance.post(API_PATHS.AUTH.LOGIN, {
                 email,
@@ -41,7 +42,7 @@ const Login = () => {
             const { token, user } = response.data;
             if (token) {
                 localStorage.setItem("token", token);
-                updateUser(user)
+                updateUser(user);
                 navigate("/dashboard");
             }
         } catch (error) {
@@ -50,11 +51,20 @@ const Login = () => {
             } else {
                 setError("Something went wrong. please try again.");
             }
+        } finally {
+            setIsLoading(false);
         }
     };
 
     return (
         <AuthLayout>
+            {/* شاشة تحميل تغطي الصفحة كلها */}
+            {isLoading && (
+                <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+                    <Loader className="h-12 w-12" />
+                </div>
+            )}
+
             <div className="lg:w-[70%] h-3/4 md:h-full flex flex-col justify-center">
                 <h3 className="text-xl font-semibold text-black">
                     Welcome Back
@@ -81,7 +91,11 @@ const Login = () => {
                     {error && (
                         <p className="text-red-500 text-xs pb-2.5">{error}</p>
                     )}
-                    <button type="submit" className="btn-primary">
+                    <button
+                        type="submit"
+                        className="btn-primary"
+                        disabled={isLoading}
+                    >
                         LOGIN
                     </button>
 

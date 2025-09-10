@@ -1,30 +1,64 @@
 const xlsx = require("xlsx");
 const Expense = require("../models/Expense");
+const currencyService = require("../services/currencyService");
 
 // Add Expense
 exports.addExpense = async (req, res) => {
     const userId = req.user.id;
     try {
-        const { icon, category, amount, date } = req.body;
+        const {
+            icon,
+            category,
+            amount,
+            date,
+            originalCurrency = "USD",
+        } = req.body;
 
-        // Validation: Check for missing filds
+        // Validation: Check for missing fields
         if (!category || !amount || !date) {
             return res
                 .status(400)
                 .json({ message: "Please fill all the fields" });
         }
 
-        const newExpence = new Expense({
+        const baseCurrency = "USD"; // Site's base currency
+        let convertedAmount = parseFloat(amount);
+        let exchangeRate = 1;
+
+        // Convert currency if different from base currency
+        if (originalCurrency !== baseCurrency) {
+            try {
+                const conversion = await currencyService.convertCurrency(
+                    parseFloat(amount),
+                    originalCurrency,
+                    baseCurrency
+                );
+                convertedAmount = conversion.convertedAmount;
+                exchangeRate = conversion.exchangeRate;
+            } catch (error) {
+                console.error("Currency conversion error:", error);
+                return res.status(400).json({
+                    message: "Currency conversion failed. Please try again.",
+                });
+            }
+        }
+
+        const newExpense = new Expense({
             userId,
             icon,
             category,
-            amount,
+            amount: convertedAmount, // Store in base currency
+            originalAmount: parseFloat(amount), // Store original amount
+            originalCurrency,
+            baseCurrency,
+            exchangeRate,
             date: new Date(date),
         });
 
-        await newExpence.save();
-        res.status(200).json(newExpence);
+        await newExpense.save();
+        res.status(200).json(newExpense);
     } catch (error) {
+        console.error("Add expense error:", error);
         res.status(500).json({ message: "Server Error" });
     }
 };

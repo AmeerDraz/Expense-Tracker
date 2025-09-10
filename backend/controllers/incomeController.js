@@ -1,30 +1,64 @@
 const xlsx = require("xlsx");
 const Income = require("../models/Income");
+const currencyService = require("../services/currencyService");
 
 // Add Income Source
 exports.addIncome = async (req, res) => {
     const userId = req.user.id;
     try {
-        const { icon, source, amount, date } = req.body;
+        const {
+            icon,
+            source,
+            amount,
+            date,
+            originalCurrency = "USD",
+        } = req.body;
 
-        // Validation: Check for missing filds
+        // Validation: Check for missing fields
         if (!source || !amount || !date) {
             return res
                 .status(400)
                 .json({ message: "Please fill all the fields" });
         }
 
+        const baseCurrency = "USD"; // Site's base currency
+        let convertedAmount = parseFloat(amount);
+        let exchangeRate = 1;
+
+        // Convert currency if different from base currency
+        if (originalCurrency !== baseCurrency) {
+            try {
+                const conversion = await currencyService.convertCurrency(
+                    parseFloat(amount),
+                    originalCurrency,
+                    baseCurrency
+                );
+                convertedAmount = conversion.convertedAmount;
+                exchangeRate = conversion.exchangeRate;
+            } catch (error) {
+                console.error("Currency conversion error:", error);
+                return res.status(400).json({
+                    message: "Currency conversion failed. Please try again.",
+                });
+            }
+        }
+
         const newIncome = new Income({
             userId,
             icon,
             source,
-            amount,
+            amount: convertedAmount, // Store in base currency
+            originalAmount: parseFloat(amount), // Store original amount
+            originalCurrency,
+            baseCurrency,
+            exchangeRate,
             date: new Date(date),
         });
 
         await newIncome.save();
         res.status(200).json(newIncome);
     } catch (error) {
+        console.error("Add income error:", error);
         res.status(500).json({ message: "Server Error" });
     }
 };
@@ -73,8 +107,6 @@ exports.deleteIncome = async (req, res) => {
 //         res.status(500).json({ message: "Server Error" });
 //     }
 // };
-
-
 
 // download Excel
 exports.downloadIncomeExcel = async (req, res) => {

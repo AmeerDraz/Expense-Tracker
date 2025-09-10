@@ -49,7 +49,7 @@ const Income = () => {
 
     // Handle Add Income
     const handleAddIncome = async (income) => {
-        const { source, amount, date, icon } = income;
+        const { source, amount, date, icon, originalCurrency } = income;
 
         // Validation Checks
         if (!source.trim()) {
@@ -73,6 +73,7 @@ const Income = () => {
                 amount,
                 date,
                 icon,
+                originalCurrency: originalCurrency || "USD",
             });
 
             setOpenAddIncomeModal(false);
@@ -82,6 +83,9 @@ const Income = () => {
             console.error(
                 "Error adding income:",
                 error.response?.data?.message || error.message
+            );
+            toast.error(
+                error.response?.data?.message || "Failed to add income"
             );
         }
     };

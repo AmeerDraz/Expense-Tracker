@@ -26,4 +26,9 @@ export const API_PATHS = {
     IMAGE: {
         UPLOAD_IMAGE: "/api/v1/auth/upload_image",
     },
+    CURRENCY: {
+        GET_CURRENCIES: "/api/v1/currency/currencies",
+        GET_EXCHANGE_RATES: "/api/v1/currency/rates",
+        CONVERT_CURRENCY: "/api/v1/currency/convert",
+    },
 };

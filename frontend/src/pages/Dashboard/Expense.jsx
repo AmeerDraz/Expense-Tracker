@@ -46,7 +46,7 @@ const Expense = () => {
 
     // Handle Add Expense
     const handleAddExpense = async (expense) => {
-        const { category, amount, date, icon } = expense;
+        const { category, amount, date, icon, originalCurrency } = expense;
 
         // Validation Checks
         if (!category.trim()) {
@@ -70,6 +70,7 @@ const Expense = () => {
                 amount,
                 date,
                 icon,
+                originalCurrency: originalCurrency || "USD",
             });
 
             setOpenAddExpenseModal(false);
@@ -79,6 +80,9 @@ const Expense = () => {
             console.error(
                 "Error adding expense:",
                 error.response?.data?.message || error.message
+            );
+            toast.error(
+                error.response?.data?.message || "Failed to add expense"
             );
         }
     };

@@ -5,6 +5,7 @@ import {
     LuTrendingDown,
     LuTrash2,
 } from "react-icons/lu";
+import CurrencyDisplay from "../CurrencyDisplay";
 
 const TransactionInfoCard = ({
     title,
@@ -14,6 +15,8 @@ const TransactionInfoCard = ({
     type,
     hideDeleteBtn,
     onDelete,
+    transaction,
+    displayCurrency = "USD",
 }) => {
     const getAmountStyles = () =>
         type === "income"
@@ -47,11 +50,21 @@ const TransactionInfoCard = ({
                     )}
 
                     <div
-                        className={`flex items-center gap-2 px-3 py-1.5 rounded-md ${getAmountStyles()}`}
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-md w-40 h-12 ${getAmountStyles()}`}
                     >
-                        <h6 className="text-xs font-medium">
-                            {type === "income" ? "+" : "-"} ${amount}
-                        </h6>
+                        <div className="text-xs font-medium w-full overflow-hidden">
+                            {transaction ? (
+                                <CurrencyDisplay
+                                    transaction={transaction}
+                                    displayCurrency="USD"
+                                    showOriginal={true}
+                                    compact={true}
+                                    sign={type === "income" ? "+" : "-"}
+                                />
+                            ) : (
+                                `${type === "income" ? "+" : "-"}$${amount}`
+                            )}
+                        </div>
 
                         {type === "income" ? (
                             <LuTrendingUp />

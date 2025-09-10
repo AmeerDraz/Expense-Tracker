@@ -1,4 +1,4 @@
-import moment from 'moment';
+import moment from "moment";
 
 export const validateEmail = (email) => {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -17,15 +17,15 @@ export const getInitials = (name) => {
 };
 
 export const addThousandsSeparator = (num) => {
-    if (num == null || isNaN(num)) return "";
+    if (num == null || isNaN(num)) return "0";
 
-    const [integerPart, fractionalPart] = num.toString().split(".");
+    const numValue = parseFloat(num);
 
-    const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-
-    return fractionalPart
-        ? `${formattedInteger}.${fractionalPart}`
-        : formattedInteger;
+    // Format with 2 decimal places and thousands separator
+    return numValue.toLocaleString("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    });
 };
 
 export const prepareExpenseBarChartData = (data = []) => {
