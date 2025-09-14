@@ -10,7 +10,8 @@ import {
     Cell,
 } from "recharts";
 
-const CustomBarChart = ({ data = [], xAxisKey = "category" }) => {    // Function to alternate colors
+const CustomBarChart = ({ data = [], xAxisKey = "category" }) => {
+    // Function to alternate colors
     const getBarColor = (index) => {
         return index % 2 === 0 ? "#875cf5" : "#cfbefb";
     };
