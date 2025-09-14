@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Input from "../Inputs/Input";
 import EmojiPickerPopup from "../EmojiPickerPopup";
 import CurrencySelector from "../Inputs/CurrencySelector";
+import Loader from "../Loader";
 
 const AddExpenseForm = ({ onAddExpense }) => {
     const [expense, setExpense] = useState({
@@ -11,9 +12,19 @@ const AddExpenseForm = ({ onAddExpense }) => {
         icon: "",
         originalCurrency: "USD",
     });
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleChange = (key, value) =>
         setExpense({ ...expense, [key]: value });
+
+    const handleSubmit = async () => {
+        setIsLoading(true);
+        try {
+            await onAddExpense(expense);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     return (
         <div className="space-y-6">
@@ -94,10 +105,18 @@ const AddExpenseForm = ({ onAddExpense }) => {
             <div className="flex justify-end pt-4">
                 <button
                     type="button"
-                    className="add-btn add-btn-fill px-6 py-2.5 text-sm font-medium"
-                    onClick={() => onAddExpense(expense)}
+                    className="add-btn add-btn-fill px-6 py-2.5 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={handleSubmit}
+                    disabled={isLoading}
                 >
-                    Add Expense
+                    {isLoading ? (
+                        <div className="flex items-center gap-2">
+                            <Loader className="h-4 w-4" />
+                            Adding...
+                        </div>
+                    ) : (
+                        "Add Expense"
+                    )}
                 </button>
             </div>
         </div>

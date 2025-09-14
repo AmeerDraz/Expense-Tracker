@@ -12,7 +12,7 @@ import Income from "./pages/Dashboard/Income";
 import Expense from "./pages/Dashboard/Expense";
 import { UserProvider } from "./context/userContext";
 import "react-toastify/dist/ReactToastify.css";
-import { Toaster } from "react-hot-toast";
+import {Toaster} from 'react-hot-toast'
 
 import { ToastContainer } from "react-toastify";
 
@@ -33,14 +33,12 @@ const App = () => {
                     </Routes>
                 </Router>
             </div>
-            <Toaster
-                toastOptions={{
-                    className: "",
-                    style: {
-                        fontSize: "13px",
-                    },
-                }}
-            />
+            <Toaster toastOptions={{
+                className: "",
+                style: {
+                    fontSize: '13px'
+                },
+            }} />
         </UserProvider>
     );
 };

@@ -8,7 +8,6 @@ import axiosInstance from "../../utils/axiosInstance";
 import { API_PATHS } from "../../utils/apiPaths";
 import { UserContext } from "../../context/userContext";
 import uploadImage from "../../utils/uploadImage";
-import Loader from "../../components/Loader";
 
 const SignUp = () => {
     const [profilePic, setProfilePic] = useState(null);
@@ -17,12 +16,13 @@ const SignUp = () => {
     const [password, setPassword] = useState("");
 
     const [error, setError] = useState(null);
-    const [isLoading, setIsLoading] = useState(false); // 👈 حالة اللودر
 
     const { updateUser } = useContext(UserContext);
+
     const navigate = useNavigate();
 
-    // handle signup form submit
+    // handel signup form submit
+
     const handleSignUp = async (e) => {
         e.preventDefault();
 
@@ -41,10 +41,12 @@ const SignUp = () => {
         }
 
         setError("");
-        setIsLoading(true); // 👈 بداية التحميل
+
+        // Signup api call
 
         try {
-            // Upload image if present
+
+            // Update image if present
             if (profilePic) {
                 const imgUploadRes = await uploadImage(profilePic);
                 profileImageUrl = imgUploadRes.imageUrl || "";
@@ -69,22 +71,16 @@ const SignUp = () => {
             } else {
                 setError("Something went wrong. please try again.");
             }
-        } finally {
-            setIsLoading(false); // 👈 إيقاف التحميل
         }
     };
 
     return (
         <AuthLayout>
-            {/* شاشة اللودر تغطي الصفحة */}
-            {isLoading && (
-                <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-                    <Loader className="h-12 w-12" />
-                </div>
-            )}
-
             <div className="lg:w-[100%] h-auto md:h-full mt-10 md:mt-0 flex flex-col justify-center">
-                <h3 className="text-xl font-semibold text-black">
+                <h3
+                    className="text-xl font-semibold text-black
+                "
+                >
                     Create an Account
                 </h3>
                 <p className="text-xs text-slate-700 mt-[5px] mb-6">
@@ -128,11 +124,7 @@ const SignUp = () => {
                     {error && (
                         <p className="text-red-500 text-xs pb-2.5">{error}</p>
                     )}
-                    <button
-                        type="submit"
-                        className="btn-primary"
-                        disabled={isLoading}
-                    >
+                    <button type="submit" className="btn-primary">
                         SIGN UP
                     </button>
 

@@ -7,7 +7,9 @@ const IncomeOverview = ({ transactions, onAddIncome }) => {
     const [chartData, setChartData] = useState([]);
 
     useEffect(() => {
+        console.log("Raw transactions:", transactions);
         const result = prepareIncomeBarChartData(transactions);
+        console.log("Processed chart data:", result);
         setChartData(result);
 
         return () => {};
