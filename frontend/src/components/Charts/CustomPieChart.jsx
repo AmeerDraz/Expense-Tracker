@@ -70,4 +70,3 @@ const CustomPieChart = ({
 };
 
 export default CustomPieChart;
-
